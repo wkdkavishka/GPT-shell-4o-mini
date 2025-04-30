@@ -1,3 +1,6 @@
+### original work
+https://github.com/0xacx/chatGPT-shell-cli
+
 <div align="center">
 
 <h1>chatGPT-shell-cli</h1>
@@ -7,7 +10,6 @@ This project now uses a Python installer (`install.py`) for setup and a Python u
 The main shell script is `chatgpt.sh`, which is installed to your system path for easy access.
 
 </div>
-
 
 ## Getting Started
 
