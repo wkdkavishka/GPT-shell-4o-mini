@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-Installer script for chatgpt-shell-cli.
+Installer script for GPT-shell-4o-mini.
 
-This script automates the installation of the chatgpt-shell-cli tool, including:
+This script automates the installation of the GPT-shell-4o-mini tool, including:
 - Downloading the main shell script
 - Installing dependencies (imgcat, magick) if needed
 - Setting up the OpenAI API key in the user's shell profile
@@ -84,7 +84,7 @@ def installChatgptScript():
     """
     userHome = getUserHome()
     runCommand(
-        f"curl -sS https://raw.githubusercontent.com/wkdkavishka/chatGPT-shell-cli/main/chatgpt.py -o {userHome}/chatgpt.py"
+        f"curl -sS https://raw.githubusercontent.com/wkdkavishka/GPT-shell-4o-mini/origin/chatgpt.py -o {userHome}/chatgpt.py"
     )
     print(f"[+] Downloaded chatgpt.py to {userHome}/chatgpt.py")
     localChatFile = Path(f"{userHome}/chatgpt.py")
@@ -111,12 +111,12 @@ def askForApiKey():
     """
     Prompt the user for their OpenAI API key.
     If not provided, instructs the user to follow manual installation.
-    Tooltip: Your OpenAI API key is required to use the chatgpt-shell-cli.
+    Tooltip: Your OpenAI API key is required to use the GPT-shell-4o-mini.
     """
     answer = input("Enter your api key: ").strip().lower()
     if not answer:
         print(
-            "[!] Please follow manual installation: https://github.com/wkdkavishka/chatGPT-shell-cli/blob/main#manual-installation"
+            "[!] Please follow manual installation: https://github.com/wkdkavishka/GPT-shell-4o-mini/blob/main#manual-installation"
         )
         sys.exit(0)
     return input("[?] Please enter your OpenAI API key: ").strip()
@@ -248,7 +248,7 @@ def parseArgs():
     Parse command-line arguments for the installer.
     Tooltip: Allows passing the API key as a command-line argument.
     """
-    parser = argparse.ArgumentParser(description="Install chatgpt-shell-cli")
+    parser = argparse.ArgumentParser(description="Install GPT-shell-4o-mini")
     parser.add_argument("--key", help="OpenAI API key")
     return parser.parse_args()
 
