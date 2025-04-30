@@ -1,6 +1,13 @@
 ### original work
 https://github.com/0xacx/chatGPT-shell-cli
 
+<div align=center>
+I translated it to python, and added some features, Few things was not working for me, also updated to gpt 4o-mini
+</div>
+<div align=center>
+** greate work from the original authour **
+</div>
+
 <div align="center">
 
 <h1>chatGPT-shell-cli</h1>
