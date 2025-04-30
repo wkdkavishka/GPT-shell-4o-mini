@@ -37,7 +37,14 @@ This script relies on `curl` for API requests and `jq` to parse JSON responses.
 
 ### Installation
 
-To install, clone this repository and run the Python installer as root:
+**For a quick install without cloning:**
+
+```sh
+curl -O https://raw.githubusercontent.com/wkdkavishka/GPT-shell-4o-mini/origin/install.py
+sudo python3 install.py
+```
+
+**To install, clone this repository and run the Python installer as root**
 
 ```sh
 git clone https://github.com/wkdkavishka/chatGPT-shell-cli.git
@@ -59,9 +66,10 @@ This will:
 
 ### Uninstallation
 
-To remove the CLI and all related configuration, run:
+**For a quick uninstall without cloning:**
 
 ```sh
+curl -O https://raw.githubusercontent.com/wkdkavishka/GPT-shell-4o-mini/origin/remove.py
 sudo python3 remove.py
 ```
 
