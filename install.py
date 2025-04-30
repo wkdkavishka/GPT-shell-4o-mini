@@ -78,21 +78,21 @@ def installMagick():
 
 def installChatgptScript():
     """
-    Download the chatgpt.sh script and install it to /usr/local/bin/gpt.
+    Download the chatgpt.py script and install it to /usr/local/bin/gpt.
     Also replaces 'open' with 'xdg-open' for Linux/FreeBSD compatibility.
     Tooltip: This is the main CLI script for interacting with ChatGPT from your shell.
     """
     userHome = getUserHome()
     runCommand(
-        f"curl -sS https://raw.githubusercontent.com/wkdkavishka/chatGPT-shell-cli/main/chatgpt.sh -o {userHome}/chatgpt.sh"
+        f"curl -sS https://raw.githubusercontent.com/wkdkavishka/chatGPT-shell-cli/main/chatgpt.py -o {userHome}/chatgpt.py"
     )
-    print(f"[+] Downloaded chatgpt.sh to {userHome}/chatgpt.sh")
-    localChatFile = Path(f"{userHome}/chatgpt.sh")
-    src = f"{userHome}/chatgpt.sh"
+    print(f"[+] Downloaded chatgpt.py to {userHome}/chatgpt.py")
+    localChatFile = Path(f"{userHome}/chatgpt.py")
+    src = f"{userHome}/chatgpt.py"
     dst = "/usr/local/bin/gpt"
     runCommand(f"mv {src} {dst}")
     runCommand(f"chmod +x {dst}")
-    print(f"[+] Copied chatgpt.sh to {dst}")
+    print(f"[+] Copied chatgpt.py to {dst}")
 
     # Fix open command on Linux/FreeBSD
     if sys.platform.startswith("linux") or "freebsd" in sys.platform:
