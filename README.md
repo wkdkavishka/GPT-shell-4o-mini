@@ -1,8 +1,4 @@
-![shell](https://user-images.githubusercontent.com/99351112/207697723-a3fabc0b-f067-4f83-96fd-1f7225a0bb38.svg)
 <div align="center">
-<p>
-
-✨Join the new <a href="https://discord.gg/fwfYAZWKqu">Discord server</a> and start contributing to this project!✨</p>
 
 <h1>chatGPT-shell-cli</h1>
 
@@ -12,22 +8,6 @@ The main shell script is `chatgpt.sh`, which is installed to your system path fo
 
 </div>
 
-## Features
-
-- [Chat](#use-the-official-chatgpt-model) with the ✨ [official ChatGPT API](https://openai.com/blog/introducing-chatgpt-and-whisper-apis) ✨ from the terminal
-- [Generate images](#commands) from a text prompt
-- View your [chat history](#commands)
-- [Chat context](#chat-context), GPT remembers previous chat questions and answers
-- Pass the input prompt with [pipe](#pipe-mode), as a [script parameter](#script-parameters) or normal [chat mode](#chat-mode)
-- List all available [OpenAI models](#commands) 
-- Set OpenAI [request parameters](#set-request-parameters)
-- Generate a [command](#commands) and run it in terminal
-
-![Screenshot 2023-01-12 at 13 59 08](https://user-images.githubusercontent.com/99351112/212061157-bc92e221-ad29-46b7-a0a8-c2735a09449d.png)
-
-![Screenshot 2023-01-13 at 16 39 27](https://user-images.githubusercontent.com/99351112/212346562-ea568cce-2ca2-4b03-9ebc-ece8902c923d.png)
-
-![faster_convert](https://user-images.githubusercontent.com/99351112/230916960-aca256c0-a2c0-4193-ace6-7ed7f3db2145.gif)
 
 ## Getting Started
 
@@ -38,12 +18,14 @@ This script relies on `curl` for API requests and `jq` to parse JSON responses.
 * [curl](https://www.curl.se)
   ```sh
   sudo apt install curl   # Debian/Ubuntu
+  sudo dnf install curl   # Fedora/Redhat linux
   # or
   brew install curl       # macOS
   ```
 * [jq](https://stedolan.github.io/jq/)
   ```sh
   sudo apt install jq     # Debian/Ubuntu
+  sudo dnf install jq     # Fedora/Redhat Linux
   # or
   brew install jq         # macOS
   ```
