@@ -12,7 +12,7 @@ setup(
     name="gpt-shell-4o-mini",
     version="1.0.0",
     author="wkdkavishka",
-    author_email="",  # Add your email here
+    author_email="w.k.d.kavishka@gmail.com",  # Add your email here
     description="A simple, lightweight CLI to use OpenAI's ChatGPT and DALL-E from the terminal",
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -52,6 +52,6 @@ setup(
             "gpt-remove=remove:main",
         ],
     },
-    keywords="chatgpt openai cli terminal gpt dalle ai assistant",
+    keywords="chatgpt openai cli terminal gpt dalle ai assistant wkdkavishka",
     license="MIT",
 )

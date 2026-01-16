@@ -133,5 +133,8 @@ dmypy.json
 .DS_Store
 Thumbs.db
 
+# Shell scripts (not needed - using Python scripts)
+*.sh
+
 # Chat history
 .chatgpt_py_history

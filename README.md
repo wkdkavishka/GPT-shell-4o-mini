@@ -73,16 +73,24 @@ This will:
 
 ### Uninstallation
 
+The `remove.py` script provides comprehensive uninstallation that works whether you installed via pip or manually.
+
 **For a quick uninstall without cloning:**
 
 ```sh
 curl -O https://raw.githubusercontent.com/wkdkavishka/GPT-shell-4o-mini/origin/remove.py
+python3 remove.py
+# Or with sudo if you used manual installation:
 sudo python3 remove.py
 ```
 
-This will:
-- Remove `OPENAI_KEY` and `/usr/local/bin` modifications from your shell profiles
-- Remove the installed `gpt` and `chatgpt` commands
+**What it removes:**
+- Package installed via pip (if applicable)
+- Manual installation from `/usr/local/bin/gpt` and `/usr/local/bin/chatgpt` (if applicable)
+- `OPENAI_KEY` and `/usr/local/bin` PATH modifications from your shell profiles
+- Chat history file (`~/.chatgpt_py_history`)
+
+The script automatically detects how the package was installed and removes it accordingly.
 
 ### Manual Installation
 
