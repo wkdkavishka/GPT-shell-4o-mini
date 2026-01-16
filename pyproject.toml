@@ -1,0 +1,46 @@
+[build-system]
+requires = ["setuptools>=45", "wheel", "setuptools_scm[toml]>=6.2"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gpt-shell-4o-mini"
+version = "1.0.0"
+description = "A simple, lightweight CLI to use OpenAI's ChatGPT and DALL-E from the terminal"
+readme = "README.md"
+requires-python = ">=3.7"
+license = {text = "MIT"}
+authors = [
+    {name = "wkdkavishka"}
+]
+keywords = ["chatgpt", "openai", "cli", "terminal", "gpt", "dalle", "ai", "assistant"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Communications :: Chat",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Operating System :: OS Independent",
+    "Environment :: Console",
+]
+dependencies = [
+    "openai>=1.0.0",
+    "rich>=10.0.0",
+    "requests>=2.25.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/wkdkavishka/GPT-shell-4o-mini"
+"Bug Tracker" = "https://github.com/wkdkavishka/GPT-shell-4o-mini/issues"
+"Source Code" = "https://github.com/wkdkavishka/GPT-shell-4o-mini"
+
+[project.scripts]
+gpt = "chatgpt:main"
+chatgpt = "chatgpt:main"
+gpt-install = "install:main"
+gpt-remove = "remove:main"
