@@ -155,8 +155,47 @@ def removeHistoryFile():
     return False
 
 
+def removeUserProfile():
+    """Remove the user profile file."""
+    userHome = getUserHome()
+    profileFile = userHome / ".chatgpt_py_info"
+    
+    if profileFile.exists():
+        try:
+            profileFile.unlink()
+            print("[+] Removed user profile file")
+            return True
+        except Exception as e:
+            print(f"[!] Could not remove profile file: {e}")
+            return False
+    return False
+
+
+def cleanWindowsEnvVar():
+    """Remove OPENAI_KEY from Windows environment variables."""
+    import platform
+    
+    if platform.system() != "Windows":
+        return False
+    
+    try:
+        # Remove user environment variable
+        subprocess.run(
+            ['reg', 'delete', 'HKCU\\Environment', '/v', 'OPENAI_KEY', '/f'],
+            capture_output=True,
+            check=False
+        )
+        print("[+] Removed OPENAI_KEY from Windows environment variables")
+        return True
+    except Exception as e:
+        print(f"[!] Could not remove Windows environment variable: {e}")
+        return False
+
+
 def main():
     """Main uninstaller function."""
+    import platform
+    
     print("=" * 50)
     print("GPT-shell-4o-mini Uninstaller")
     print("=" * 50)
@@ -184,12 +223,20 @@ def main():
     
     print()
     
-    # Clean shell profiles
-    print("[*] Cleaning shell profiles...")
-    if cleanShellProfiles():
-        removedSomething = True
+    # Clean shell profiles (Unix/Linux/macOS)
+    if platform.system() != "Windows":
+        print("[*] Cleaning shell profiles...")
+        if cleanShellProfiles():
+            removedSomething = True
+        else:
+            print("[=] No shell profile modifications found")
     else:
-        print("[=] No shell profile modifications found")
+        # Clean Windows environment variables
+        print("[*] Cleaning Windows environment variables...")
+        if cleanWindowsEnvVar():
+            removedSomething = True
+        else:
+            print("[=] No Windows environment variables found")
     
     print()
     
@@ -201,13 +248,25 @@ def main():
         print("[=] No chat history file found")
     
     print()
+    
+    # Remove user profile
+    print("[*] Checking for user profile...")
+    if removeUserProfile():
+        removedSomething = True
+    else:
+        print("[=] No user profile found")
+    
+    print()
     print("=" * 50)
     
     if removedSomething:
         print("[✔] Uninstallation complete!")
         print()
-        print("Note: You may need to restart your terminal or run:")
-        print("      source ~/.bashrc  (or your shell's config file)")
+        if platform.system() != "Windows":
+            print("Note: You may need to restart your terminal or run:")
+            print("      source ~/.bashrc  (or your shell's config file)")
+        else:
+            print("Note: Restart your terminal for changes to take effect")
     else:
         print("[=] Nothing to uninstall - package not found")
     

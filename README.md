@@ -10,7 +10,7 @@ I translated it to python, and added some features, Few things was not working f
 
 <div align="center">
 
-<h1>chatGPT-shell-cli</h1>
+<h1>GPT-shell-4o-mini</h1>
 
 A simple, lightweight CLI to use OpenAI's ChatGPT and DALL-E from the terminal.  
 This project now uses a Python installer (`install.py`) for setup and a Python uninstaller (`remove.py`) for clean removal.  
@@ -18,65 +18,95 @@ The main shell script is `chatgpt.sh`, which is installed to your system path fo
 
 </div>
 
+## Features ✨
+
+### 🌍 **Cross-Platform Support**
+* **Windows 10/11** - Full support with automatic environment variable setup
+* **macOS** - Works seamlessly on all versions
+* **Linux** - Supports all major distributions (Ubuntu, Fedora, Debian, Arch, etc.)
+
+### 🧠 **Advanced Terminal Context**
+* **Static User Profile** - Remembers your OS, username, and distribution
+* **Dynamic Session Capture** - Sends recent terminal commands AND outputs to ChatGPT
+  * tmux support - Captures last 30 lines automatically
+  * screen support - GNU screen buffer capture
+  * History fallback - Works even without tmux/screen
+* **Intelligent Responses** - ChatGPT sees your errors, current directory, and shell type
+
+### 🚀 **Seamless Setup**
+* **First-run wizard** - Automatic API key setup and verification
+* **No external dependencies** - Uses Python's requests library (no curl needed)
+* **Platform-aware** - Automatically configures for your OS
+
+---
+
 ## Getting Started
 
 ### Prerequisites
 
-This script relies on `curl` for API requests and `jq` to parse JSON responses.
+* **Python 3.7+** (usually pre-installed)
+* **An OpenAI API key** - Get one free at [OpenAI](https://platform.openai.com/account/api-keys)
 
-* [curl](https://www.curl.se)
+**Optional (for best terminal context):**
+* [tmux](https://github.com/tmux/tmux) - Highly recommended for full terminal session capture
   ```sh
-  sudo apt install curl   # Debian/Ubuntu
-  sudo dnf install curl   # Fedora/Redhat linux
-  # or
-  brew install curl       # macOS
+  sudo apt install tmux   # Ubuntu/Debian
+  sudo dnf install tmux   # Fedora
+  brew install tmux       # macOS
   ```
-* [jq](https://stedolan.github.io/jq/)
-  ```sh
-  sudo apt install jq     # Debian/Ubuntu
-  sudo dnf install jq     # Fedora/Redhat Linux
-  # or
-  brew install jq         # macOS
-  ```
-* An OpenAI API key. Create an account and get a free API Key at [OpenAI](https://platform.openai.com/account/api-keys)
 
-* Optionally, you can install [glow](https://github.com/charmbracelet/glow) to render responses in markdown 
+---
 
 ### Installation
 
-**Via pip (Recommended - Works on all platforms):**
+#### Windows
+
+**Pip Installation (Only method for Windows):**
 
 ```sh
 pip install gpt-shell-4o-mini
 ```
 
-After installation, simply run `gpt` and you'll be guided through a first-run setup to configure your OpenAI API key:
+After installation, run `gpt` to start the setup wizard:
 
 ```sh
 gpt
 ```
 
-The setup wizard will:
-- Prompt for your OpenAI API key
-- Verify the key
-- Save it to your shell profile automatically
+The wizard will:
+* Prompt for your OpenAI API key
+* Verify the key with OpenAI
+* Save it to Windows environment variables automatically
+* Create your user profile
 
-**For a quick install without cloning:**
+> **Note:** Manual installation via `install.py` is not supported on Windows.
 
+#### macOS / Linux
+
+**Option 1: Pip Installation (Recommended)**
+
+```sh
+pip install gpt-shell-4o-mini
+```
+
+Run `gpt` to start the setup wizard.
+
+**Option 2: Manual Installation**
+
+Quick install without cloning:
 ```sh
 curl -O https://raw.githubusercontent.com/wkdkavishka/GPT-shell-4o-mini/origin/install.py
 sudo python3 install.py
 ```
 
-**To install, clone this repository and run the Python installer as root**
-
+Or clone and install:
 ```sh
-git clone https://github.com/wkdkavishka/chatGPT-shell-cli.git
-cd chatGPT-shell-cli
+git clone https://github.com/wkdkavishka/GPT-shell-4o-mini.git
+cd GPT-shell-4o-mini
 sudo python3 install.py
 ```
 
-You will be prompted for your OpenAI API key.  
+You will be prompted for your OpenAI API key during the installation.
 Alternatively, you can provide your key directly:
 
 ```sh
@@ -131,6 +161,67 @@ If you want to install manually:
 #### Script Parameters
   - You can also pass the prompt as a command line argument:  
     `gpt -p "What is the regex to match an email address?"`
+
+---
+
+## 🧠 Terminal Context Feature
+
+### How It Works
+
+GPT-shell-4o-mini automatically sends contextual information with every prompt:
+
+**Static Profile** (`~/.chatgpt_py_info`):
+* Your username
+* Operating system and version
+* Linux distribution (if applicable)
+
+**Dynamic Terminal Session** (captured in real-time):
+* Current working directory
+* Shell type (bash, zsh, PowerShell, etc.)
+* Recent terminal commands AND their outputs!
+
+### Example
+
+When you run `gpt` in tmux, ChatGPT sees:
+
+```
+[Static Profile: User: john | OS: Linux | Distro: Ubuntu 22.04]
+[Terminal Session (Shell: bash | CWD: /home/john/project | Source: tmux):
+john@ubuntu:~/project$ npm run dev
+Error: Missing script: "dev"
+]
+
+You: How do I fix this?
+```
+
+ChatGPT response will be context-aware:
+> "I see you're missing the 'dev' script in package.json. Since you're on Ubuntu..."
+
+### Best Experience
+
+For full terminal session capture (commands + outputs):
+
+```bash
+# Install tmux
+sudo apt install tmux   # Ubuntu/Debian
+sudo dnf install tmux   # Fedora  
+brew install tmux       # macOS
+
+# Start tmux
+tmux
+
+# Now run gpt - it captures your entire session!
+gpt
+```
+
+Without tmux/screen, it falls back to command history only.
+
+---
+
+## Support
+
+For issues, questions, or contributions, please visit the  
+[GitHub Repository](https://github.com/wkdkavishka/GPT-shell-4o-mini)
 
 ### Commands
 

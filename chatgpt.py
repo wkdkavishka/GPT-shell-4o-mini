@@ -43,6 +43,7 @@ except ImportError:
 # --- Configuration ---
 API_KEY = os.getenv("OPENAI_API_KEY") or os.getenv("OPENAI_KEY")
 HISTORY_FILE = Path.home() / ".chatgpt_py_history"
+USER_PROFILE_FILE = Path.home() / ".chatgpt_py_info"
 DEFAULT_MODEL = "gpt-4o-mini"  # Updated default
 DEFAULT_TEMPERATURE = 0.7
 DEFAULT_MAX_TOKENS = 1024
@@ -235,14 +236,35 @@ def generate_image(prompt, size):
 def get_chat_completion(messages, model, temperature, max_tokens):
     """Gets a completion from a chat model."""
     try:
-        # console.print("[grey50]Waiting for response...[/grey50]", end="\r")
+        # Build complete context
+        context_parts = []
+        
+        # Add static profile
+        profile = format_user_profile()
+        if profile:
+            context_parts.append(profile)
+        
+        # Add terminal session
+        terminal = format_terminal_session()
+        if terminal:
+            context_parts.append(terminal)
+        
+        # Combine contexts
+        full_context = "\n".join(context_parts)
+        
+        # Prepend to first user message
+        if full_context and len(messages) > 1:
+            for i, msg in enumerate(messages):
+                if msg["role"] == "user":
+                    messages[i]["content"] = f"{full_context}\n\n{msg['content']}"
+                    break
+        
         response = client.chat.completions.create(
             model=model,
             messages=messages,
             temperature=temperature,
             max_tokens=max_tokens,
         )
-        # console.print(" " * 30, end="\r") # Clear waiting message
         content = response.choices[0].message.content
         return content.strip() if content else ""
     except APIError as e:
@@ -256,60 +278,321 @@ def get_chat_completion(messages, model, temperature, max_tokens):
 def verify_api_key(api_key):
     """Verify that an OpenAI API key is valid by making a test request."""
     try:
-        response = subprocess.run(
-            [
-                "curl",
-                "-s",
-                "-H",
-                f"Authorization: Bearer {api_key}",
-                "https://api.openai.com/v1/models",
-            ],
-            capture_output=True,
-            text=True,
-            timeout=10,
+        response = requests.get(
+            "https://api.openai.com/v1/models",
+            headers={"Authorization": f"Bearer {api_key}"},
+            timeout=10
         )
         
-        if response.returncode == 0 and "data" in response.stdout:
-            return True
+        # Check if request was successful
+        if response.status_code == 200:
+            data = response.json()
+            if "data" in data:
+                return True
         return False
     except Exception:
         return False
 
 
-def update_shell_profile(api_key):
-    """Add or update the OPENAI_KEY in the user's shell profile."""
-    profile_paths = [
-        Path.home() / ".bashrc",
-        Path.home() / ".zprofile",
-        Path.home() / ".zshrc",
-        Path.home() / ".bash_profile",
-        Path.home() / ".profile",
-    ]
+# --- Terminal Context Functions ---
 
-    for profile_path in profile_paths:
-        if profile_path.exists():
-            try:
-                with profile_path.open("r") as f:
+
+def capture_tmux_session(lines=30):
+    """Capture recent lines from current tmux pane."""
+    try:
+        if os.environ.get('TMUX'):
+            result = subprocess.run(
+                ['tmux', 'capture-pane', '-p', '-S', f'-{lines}'],
+                capture_output=True,
+                text=True,
+                timeout=2
+            )
+            if result.returncode == 0:
+                return result.stdout
+    except Exception:
+        pass
+    return None
+
+
+def capture_screen_session():
+    """Capture from GNU screen."""
+    try:
+        if os.environ.get('STY'):
+            import tempfile
+            with tempfile.NamedTemporaryFile(mode='w+', delete=False, suffix='.txt') as f:
+                temp_file = f.name
+            
+            subprocess.run(['screen', '-X', 'hardcopy', temp_file], timeout=2)
+            
+            if os.path.exists(temp_file):
+                with open(temp_file, 'r') as f:
                     content = f.read()
+                os.unlink(temp_file)
+                return content
+    except Exception:
+        pass
+    return None
 
-                if "export OPENAI_KEY" not in content:
-                    with profile_path.open("a") as f:
-                        f.write(f"\n# OpenAI API Key for GPT-shell-4o-mini\n")
-                        f.write(f"export OPENAI_KEY={api_key}\n")
-                    console.print(f"[green]✓[/green] Added OPENAI_KEY to {profile_path}")
-                    return True
-                else:
-                    console.print(f"[yellow]![/yellow] OPENAI_KEY already exists in {profile_path}")
-                    return True
-            except Exception as e:
-                console.print(f"[yellow]Warning:[/yellow] Could not update {profile_path}: {e}")
-                continue
 
-    # If no profile found, just set for current session
-    console.print("[yellow]Warning:[/yellow] No shell profile found.")
-    console.print(f"[yellow]Please manually add to your shell config:[/yellow]")
-    console.print(f"  export OPENAI_KEY={api_key}")
-    return False
+def get_shell_history(max_commands=5):
+    """Get recent shell commands from history."""
+    import platform
+    
+    system = platform.system()
+    history = []
+    
+    try:
+        if system == "Windows":
+            # PowerShell history
+            ps_history = Path.home() / "AppData/Roaming/Microsoft/Windows/PowerShell/PSReadLine/ConsoleHost_history.txt"
+            if ps_history.exists():
+                with open(ps_history, 'r', encoding='utf-8') as f:
+                    lines = f.readlines()
+                    history = [line.strip() for line in lines[-max_commands:] if line.strip()]
+        else:
+            # Try bash history
+            bash_history = Path.home() / ".bash_history"
+            if bash_history.exists():
+                with open(bash_history, 'r') as f:
+                    lines = f.readlines()
+                    history = [line.strip() for line in lines[-max_commands:] if line.strip()]
+            
+            # Try zsh history if bash not found
+            elif (Path.home() / ".zsh_history").exists():
+                zsh_history = Path.home() / ".zsh_history"
+                with open(zsh_history, 'rb') as f:
+                    content = f.read().decode('utf-8', errors='ignore')
+                    lines = content.split('\n')
+                    # zsh history format: : timestamp:0;command
+                    history = []
+                    for line in lines[-max_commands:]:
+                        if ';' in line:
+                            cmd = line.split(';', 1)[1].strip()
+                            if cmd:
+                                history.append(cmd)
+                        elif line.strip() and not line.startswith(':'):
+                            history.append(line.strip())
+    except Exception:
+        pass
+    
+    return history
+
+
+def get_current_shell():
+    """Detect current shell."""
+    import platform
+    
+    if platform.system() == "Windows":
+        if os.environ.get("PSModulePath"):
+            return "PowerShell"
+        return "cmd"
+    
+    shell_path = os.environ.get("SHELL", "")
+    return shell_path.split("/")[-1] if shell_path else "unknown"
+
+
+def clean_terminal_output(text):
+    """Remove ANSI color codes and clean up terminal output."""
+    import re
+    
+    # Remove ANSI escape sequences
+    ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
+    text = ansi_escape.sub('', text)
+    
+    # Remove carriage returns that mess up display
+    text = text.replace('\r\n', '\n').replace('\r', '\n')
+    
+    # Limit to avoid token limits (last 2000 chars)
+    if len(text) > 2000:
+        text = "...(truncated)\n" + text[-2000:]
+    
+    return text
+
+
+def get_terminal_session(max_lines=30):
+    """
+    Capture recent terminal session (commands + outputs).
+    Tries multiple methods in order.
+    Returns: (method_name, session_text)
+    """
+    
+    # Try tmux first (most common for developers)
+    session = capture_tmux_session(lines=max_lines)
+    if session:
+        return ("tmux", session)
+    
+    # Try screen
+    session = capture_screen_session()
+    if session:
+        return ("screen", session)
+    
+    # Fallback: command history only (no outputs)
+    history = get_shell_history(max_commands=5)
+    if history:
+        return ("history", "\n".join([f"$ {cmd}" for cmd in history]))
+    
+    return (None, None)
+
+
+def format_terminal_session():
+    """Format terminal session as context string."""
+    try:
+        method, session = get_terminal_session(max_lines=30)
+        
+        if not session:
+            return ""
+        
+        # Clean the output
+        session = clean_terminal_output(session)
+        
+        # Build header
+        parts = [
+            f"Shell: {get_current_shell()}",
+            f"CWD: {os.getcwd()}"
+        ]
+        
+        if method:
+            parts.append(f"Source: {method}")
+        
+        header = " | ".join(parts)
+        
+        return f"[Terminal Session ({header}):\n{session}\n]"
+    except Exception:
+        # Silently fail if context collection fails
+        return ""
+
+
+# --- Static User Profile Functions ---
+
+
+def collect_user_profile():
+    """Collect static user profile information (done once during setup)."""
+    import platform
+    import getpass
+    
+    profile = {
+        "username": getpass.getuser(),
+        "os": platform.system(),
+        "os_version": platform.version(),
+    }
+    
+    # Add Linux distribution if applicable
+    if profile["os"] == "Linux":
+        try:
+            import distro
+            profile["distro"] = distro.name(pretty=True)
+        except ImportError:
+            try:
+                with open("/etc/os-release") as f:
+                    for line in f:
+                        if line.startswith("PRETTY_NAME="):
+                            profile["distro"] = line.split("=")[1].strip().strip('"')
+                            break
+            except:
+                profile["distro"] = "Unknown Linux"
+    
+    return profile
+
+
+def save_user_profile(profile):
+    """Save user profile to file."""
+    try:
+        with open(USER_PROFILE_FILE, "w") as f:
+            json.dump(profile, f, indent=2)
+        return True
+    except Exception:
+        return False
+
+
+def load_user_profile():
+    """Load user profile from file."""
+    if not USER_PROFILE_FILE.exists():
+        return None
+    
+    try:
+        with open(USER_PROFILE_FILE, "r") as f:
+            return json.load(f)
+    except:
+        return None
+
+
+def format_user_profile():
+    """Format static profile as string."""
+    profile = load_user_profile()
+    if not profile:
+        return ""
+    
+    parts = [
+        f"User: {profile.get('username', 'unknown')}",
+        f"OS: {profile.get('os', 'unknown')}"
+    ]
+    
+    if profile.get("distro"):
+        parts.append(f"Distro: {profile['distro']}")
+    
+    parts.append(f"Version: {profile.get('os_version', 'unknown')}")
+    
+    return "[Static Profile: " + " | ".join(parts) + "]"
+
+
+# --- Environment Variable Setup Functions ---
+
+
+def update_shell_profile(api_key):
+    """Add or update the OPENAI_KEY in the user's shell profile or system."""
+    import platform
+    
+    system = platform.system()
+    
+    if system == "Windows":
+        # Windows: Use setx to set user environment variable
+        try:
+            subprocess.run(['setx', 'OPENAI_KEY', api_key], 
+                          check=True, capture_output=True)
+            # Also set for current session
+            os.environ['OPENAI_KEY'] = api_key
+            console.print(f"[green]✓[/green] Added OPENAI_KEY to Windows environment variables")
+            console.print(f"[yellow]Note:[/yellow] Restart your terminal for the change to take effect")
+            return True
+        except Exception as e:
+            console.print(f"[yellow]Warning:[/yellow] Could not set environment variable: {e}")
+            console.print(f"[yellow]Please manually set OPENAI_KEY in System Settings[/yellow]")
+            return False
+            
+    else:  # macOS or Linux
+        # Existing Unix shell profile logic
+        profile_paths = [
+            Path.home() / ".bashrc",
+            Path.home() / ".zprofile",
+            Path.home() / ".zshrc",
+            Path.home() / ".bash_profile",
+            Path.home() / ".profile",
+        ]
+
+        for profile_path in profile_paths:
+            if profile_path.exists():
+                try:
+                    with profile_path.open("r") as f:
+                        content = f.read()
+
+                    if "export OPENAI_KEY" not in content:
+                        with profile_path.open("a") as f:
+                            f.write(f"\n# OpenAI API Key for GPT-shell-4o-mini\n")
+                            f.write(f"export OPENAI_KEY={api_key}\n")
+                        console.print(f"[green]✓[/green] Added OPENAI_KEY to {profile_path}")
+                        return True
+                    else:
+                        console.print(f"[yellow]![/yellow] OPENAI_KEY already exists in {profile_path}")
+                        return True
+                except Exception as e:
+                    console.print(f"[yellow]Warning:[/yellow] Could not update {profile_path}: {e}")
+                    continue
+
+        # If no profile found
+        console.print("[yellow]Warning:[/yellow] No shell profile found.")
+        console.print(f"[yellow]Please manually add to your shell config:[/yellow]")
+        console.print(f"  export OPENAI_KEY={api_key}")
+        return False
 
 
 def first_run_setup():
@@ -348,7 +631,30 @@ def first_run_setup():
         
         # Update shell profile
         console.print("\n[cyan]Saving API key to your shell profile...[/cyan]")
-        if update_shell_profile(api_key):
+        profile_saved = update_shell_profile(api_key)
+        
+        # Collect and save user profile
+        console.print("\n[cyan]Setting up your profile...[/cyan]")
+        profile = collect_user_profile()
+        
+        # Allow username customization
+        console.print(f"\n[bold]Detected username:[/bold] {profile['username']}")
+        custom_name = console.input(
+            "[bold]Press Enter to use this, or type a different name:[/bold] "
+        ).strip()
+        
+        if custom_name:
+            profile['username'] = custom_name
+        
+        # Save profile
+        if save_user_profile(profile):
+            console.print(f"\n[green]✓[/green] Profile saved:")
+            console.print(f"  Username: {profile['username']}")
+            console.print(f"  OS: {profile['os']}")
+            if 'distro' in profile:
+                console.print(f"  Distribution: {profile['distro']}")
+        
+        if profile_saved:
             console.print("\n[green]✓[/green] Setup complete!")
             console.print("\n[bold]Important:[/bold] For the key to be available, run:")
             console.print("  [cyan]source ~/.bashrc[/cyan]  (or your shell's config file)")
