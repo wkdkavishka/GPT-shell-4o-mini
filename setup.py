@@ -10,7 +10,7 @@ long_description = (this_directory / "README.md").read_text(encoding="utf-8")
 
 setup(
     name="gpt-shell-4o-mini",
-    version="1.0.0",
+    version="1.0.1",
     author="wkdkavishka",
     author_email="w.k.d.kavishka@gmail.com",  # Add your email here
     description="A simple, lightweight CLI to use OpenAI's ChatGPT and DALL-E from the terminal",

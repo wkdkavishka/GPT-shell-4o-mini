@@ -44,6 +44,23 @@ This script relies on `curl` for API requests and `jq` to parse JSON responses.
 
 ### Installation
 
+**Via pip (Recommended - Works on all platforms):**
+
+```sh
+pip install gpt-shell-4o-mini
+```
+
+After installation, simply run `gpt` and you'll be guided through a first-run setup to configure your OpenAI API key:
+
+```sh
+gpt
+```
+
+The setup wizard will:
+- Prompt for your OpenAI API key
+- Verify the key
+- Save it to your shell profile automatically
+
 **For a quick install without cloning:**
 
 ```sh
