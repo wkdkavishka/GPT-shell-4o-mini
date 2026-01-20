@@ -44,3 +44,12 @@ gpt = "chatgpt:main"
 chatgpt = "chatgpt:main"
 gpt-install = "install:main"
 gpt-remove = "remove:main"
+
+[tool.setuptools]
+packages = ["chatgpt"]
+
+[tool.setuptools.package-dir]
+"" = "."
+
+[tool.setuptools.package-data]
+chatgpt = ["py.typed"]

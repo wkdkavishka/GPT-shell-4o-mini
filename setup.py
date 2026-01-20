@@ -21,8 +21,8 @@ setup(
         "Bug Tracker": "https://github.com/wkdkavishka/GPT-shell-4o-mini/issues",
         "Source Code": "https://github.com/wkdkavishka/GPT-shell-4o-mini",
     },
-    packages=find_packages(),
-    py_modules=["chatgpt", "install", "remove"],
+    packages=["chatgpt"],
+    py_modules=["install", "remove"],
     classifiers=[
         "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
