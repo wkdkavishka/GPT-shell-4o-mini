@@ -1,9 +1,8 @@
-#!/usr/bin/env python3
 """
-Main entry point for GPT-shell-4o-mini when run as python -m chatgpt.
+Main entry point for python -m chatgpt execution.
 """
 
-from . import main
+from chatgpt.main import main
 
 if __name__ == "__main__":
     main()

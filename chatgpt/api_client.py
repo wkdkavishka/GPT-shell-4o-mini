@@ -1,15 +1,17 @@
 """
-OpenAI API interaction functions for GPT-shell-4o-mini.
+API client functions for GPT-shell-4o-mini.
+
+This module handles all interactions with the OpenAI API,
+including chat completions, image generation, and model management.
 """
 
-import os
 import sys
 import json
-import subprocess
 import webbrowser
 from datetime import datetime
+from rich.console import Console
 
-# Import OpenAI library
+# Try importing necessary libraries and provide helpful error messages
 try:
     from openai import OpenAI, APIError, RateLimitError, APIConnectionError
 except ImportError:
@@ -19,20 +21,19 @@ except ImportError:
     )
     sys.exit(1)
 
-# Import project modules
-from .config import COMMAND_GENERATION_PROMPT
-from ..user.profile import format_user_profile
-from ..os_specific.terminal import format_terminal_session
+# Configuration
+DEFAULT_MODEL = "gpt-4o-mini"
+DEFAULT_TEMPERATURE = 0.7
+DEFAULT_MAX_TOKENS = 1024
+DEFAULT_IMAGE_SIZE = "512x512"
+MAX_CONTEXT_MESSAGES = 10
+
+console = Console()
+client = None  # Initialize client later after checking API key
 
 
-def handle_api_error(e, console=None):
+def handle_api_error(e):
     """Handles common OpenAI API errors."""
-    # Import console only when needed to avoid circular imports
-    if console is None:
-        from rich.console import Console
-
-        console = Console()
-
     if isinstance(e, RateLimitError):
         console.print(
             f"[bold red]API Error:[/bold red] Rate limit exceeded. Please check your plan and usage limits."
@@ -50,23 +51,25 @@ def handle_api_error(e, console=None):
     sys.exit(1)
 
 
-def list_models(client=None, console=None):
+def initialize_client(api_key):
+    """Initialize the OpenAI client with the provided API key."""
+    global client
+    try:
+        client = OpenAI(api_key=api_key)
+        return client
+    except Exception as e:
+        console.print(f"[bold red]Error initializing OpenAI client:[/bold red] {e}")
+        sys.exit(1)
+
+
+def list_models():
     """Lists available OpenAI models."""
-    # Import console only when needed to avoid circular imports
-    if console is None:
-        from rich.console import Console
-
-        console = Console()
-
     try:
         console.print("[grey50]Fetching models...[/grey50]", end="\r")
-        if client is None:
-            from .. import client
         models = client.models.list()
         console.print(
             "Available OpenAI Models:" + " " * 20
         )  # Overwrite fetching message
-
         # Sort models by creation date or ID if needed
         for model in sorted(models.data, key=lambda x: x.id):
             created_date = (
@@ -78,26 +81,17 @@ def list_models(client=None, console=None):
                 f"- [bold cyan]{model.id}[/bold cyan] (Owned by: {model.owned_by}, Created: {created_date})"
             )
     except APIError as e:
-        handle_api_error(e, console)
+        handle_api_error(e)
 
 
-def get_model_details(model_id, client=None, console=None):
+def get_model_details(model_id):
     """Gets details for a specific model."""
-    # Import console only when needed to avoid circular imports
-    if console is None:
-        from rich.console import Console
-
-        console = Console()
-
     try:
         console.print(f"[grey50]Fetching details for {model_id}...[/grey50]", end="\r")
-        if client is None:
-            from .. import client
         model = client.models.retrieve(model_id)
         console.print(
             f"Details for model [bold cyan]{model_id}[/bold cyan]:" + " " * 20
         )  # Overwrite
-
         # Print details using rich formatting or just json.dumps
         console.print(json.dumps(model.to_dict(), indent=2))
     except APIError as e:
@@ -106,21 +100,13 @@ def get_model_details(model_id, client=None, console=None):
             console.print(f"[bold red]Error:[/bold red] Model '{model_id}' not found.")
             sys.exit(1)
         else:
-            handle_api_error(e, console)
+            handle_api_error(e)
 
 
-def generate_image(prompt, size, client=None, console=None):
+def generate_image(prompt, size):
     """Generates an image using DALL-E."""
-    # Import console only when needed to avoid circular imports
-    if console is None:
-        from rich.console import Console
-
-        console = Console()
-
     try:
         console.print("[grey50]Generating image...[/grey50]", end="\r")
-        if client is None:
-            from .. import client
         response = client.images.generate(
             model="dall-e-3",  # Or dall-e-2 if preferred/available
             prompt=prompt,
@@ -140,7 +126,7 @@ def generate_image(prompt, size, client=None, console=None):
             console.print(f"[yellow]Could not open browser:[/yellow] {e}")
 
     except APIError as e:
-        handle_api_error(e, console)
+        handle_api_error(e)
     except (
         Exception
     ) as e:  # Catch other potential errors like network issues during download etc.
@@ -149,10 +135,14 @@ def generate_image(prompt, size, client=None, console=None):
         )
 
 
-def get_chat_completion(messages, model, temperature, max_tokens, client=None):
+def get_chat_completion(messages, model, temperature, max_tokens):
     """Gets a completion from a chat model."""
     try:
-        # Build complete context
+        # Import here to avoid circular imports
+        from .user_profile import format_user_profile
+        from .terminal_context import format_terminal_session
+
+        # Build complete context for EVERY prompt
         context_parts = []
 
         # Add static profile
@@ -168,12 +158,10 @@ def get_chat_completion(messages, model, temperature, max_tokens, client=None):
         # Combine contexts
         full_context = "\n".join(context_parts)
 
-        # Prepend to first user message
-        if full_context and len(messages) > 1:
-            for i, msg in enumerate(messages):
-                if msg["role"] == "user":
-                    messages[i]["content"] = f"{full_context}\n\n{msg['content']}"
-                    break
+        # Prepend context to EVERY user message, not just the first one
+        for i, msg in enumerate(messages):
+            if msg["role"] == "user":
+                messages[i]["content"] = f"{full_context}\n\n{msg['content']}"
 
         response = client.chat.completions.create(
             model=model,
@@ -186,3 +174,17 @@ def get_chat_completion(messages, model, temperature, max_tokens, client=None):
     except APIError as e:
         handle_api_error(e)
         return None  # Indicate failure
+
+
+def get_system_prompt():
+    """Get the default system prompt."""
+    return f"You are ChatGPT, a large language model trained by OpenAI. Answer as concisely as possible. Current date: {datetime.now().strftime('%m/%d/%Y')}."
+
+
+def get_chat_init_prompt():
+    """Get the chat initialization prompt."""
+    return f"You are ChatGPT, a Large Language Model trained by OpenAI. You answer as concisely as possible for each response (e.g. don't be verbose). If you are generating a list, do not have too many items. Keep the number of items short. Before each user prompt you will be given the chat history in Q&A form. Output your answer directly, with no labels in front. Do not start your answers with A or Anwser. Today's date is {datetime.now().strftime('%m/%d/%Y')}"
+
+
+# Command generation prompt
+COMMAND_GENERATION_PROMPT = "You are a Command Line Interface expert and your task is to provide functioning shell commands. Return a CLI command and nothing else - do not send it in a code block, quotes, or anything else, just the pure text CONTAINING ONLY THE COMMAND. If possible, return a one-line bash command or chain many commands together. Return ONLY the command ready to run in the terminal. The command should do the following:"

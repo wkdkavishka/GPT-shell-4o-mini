@@ -1,5 +1,8 @@
 """
 Terminal context capture functions for GPT-shell-4o-mini.
+
+This module handles capturing terminal session data from various sources
+like tmux, screen, and shell history.
 """
 
 import os
@@ -50,11 +53,10 @@ def capture_screen_session():
 
 def get_shell_history(max_commands=5):
     """Get recent shell commands from history."""
-    system = platform.system()
     history = []
 
     try:
-        if system == "Windows":
+        if platform.system() == "Windows":
             # PowerShell history
             ps_history = (
                 Path.home()
@@ -110,7 +112,9 @@ def get_current_shell():
 
 def clean_terminal_output(text):
     """Remove ANSI color codes and clean up terminal output."""
-    # Remove ANSI escape sequences
+    import re
+
+    # More comprehensive ANSI escape sequence pattern
     ansi_escape = re.compile(r"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])")
     text = ansi_escape.sub("", text)
 
@@ -124,7 +128,7 @@ def clean_terminal_output(text):
     return text
 
 
-def get_terminal_session(max_lines=30):
+def get_terminal_session(max_lines=300):
     """
     Capture recent terminal session (commands + outputs).
     Tries multiple methods in order.
@@ -152,7 +156,7 @@ def get_terminal_session(max_lines=30):
 def format_terminal_session():
     """Format terminal session as context string."""
     try:
-        method, session = get_terminal_session(max_lines=30)
+        method, session = get_terminal_session(max_lines=300)
 
         if not session:
             return ""
@@ -160,15 +164,28 @@ def format_terminal_session():
         # Clean the output
         session = clean_terminal_output(session)
 
-        # Build header
-        parts = [f"Shell: {get_current_shell()}", f"CWD: {os.getcwd()}"]
+        # Build terminal session info
+        parts = [
+            f"Shell: {get_current_shell()}",
+            f"CWD: {os.getcwd()}",
+            f"User: {os.getenv('USER', os.getenv('USERNAME', 'unknown'))}",
+            f"Home: {Path.home()}",
+        ]
 
-        if method:
-            parts.append(f"Source: {method}")
+        # Add environment info
+        if os.getenv("VIRTUAL_ENV"):
+            parts.append(f"VEnv: {os.path.basename(os.getenv('VIRTUAL_ENV'))}")
 
-        header = " | ".join(parts)
+        if os.getenv("CONDA_DEFAULT_ENV"):
+            parts.append(f"Conda: {os.getenv('CONDA_DEFAULT_ENV')}")
 
-        return f"[Terminal Session ({header}):\n{session}\n]"
+        terminal_info = " | ".join(parts)
+
+        # Format as separate components
+        terminal_session = f"[Terminal Session: ({terminal_info})]"
+        terminal_history = f"[Terminal History: ({session})]"
+
+        return f"{terminal_session}\n{terminal_history}"
     except Exception:
         # Silently fail if context collection fails
         return ""

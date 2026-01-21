@@ -4,15 +4,15 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "gpt-shell-4o-mini"
-version = "1.1.0"
+version = "1.2.3"
 description = "A simple, lightweight CLI to use OpenAI's ChatGPT and DALL-E from the terminal"
 readme = "README.md"
 requires-python = ">=3.7"
 license = {text = "MIT"}
 authors = [
-    {name = "wkdkavishka"}
+    {name = "wkdkavishka", email = "w.k.d.kavishka@gmail.com"}
 ]
-keywords = ["chatgpt", "openai", "cli", "terminal", "gpt", "dalle", "ai", "assistant"]
+keywords = ["chatgpt", "openai", "cli", "terminal", "gpt", "dalle", "ai", "assistant", "wkdkavishka"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
@@ -32,6 +32,7 @@ dependencies = [
     "openai>=1.0.0",
     "rich>=10.0.0",
     "requests>=2.25.0",
+    "distro>=1.5.0; sys_platform == 'linux'",  # Linux only
 ]
 
 [project.urls]
@@ -40,8 +41,8 @@ Homepage = "https://github.com/wkdkavishka/GPT-shell-4o-mini"
 "Source Code" = "https://github.com/wkdkavishka/GPT-shell-4o-mini"
 
 [project.scripts]
-gpt = "chatgpt:main"
-chatgpt = "chatgpt:main"
+gpt = "chatgpt.main:main"
+chatgpt = "chatgpt.main:main"
 gpt-install = "install:main"
 gpt-remove = "remove:main"
 

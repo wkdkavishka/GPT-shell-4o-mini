@@ -1,23 +1,23 @@
 """
 User profile management functions for GPT-shell-4o-mini.
+
+This module handles static user profile collection, storage, and formatting.
 """
 
-import os
 import json
 import platform
 import getpass
 from pathlib import Path
 
-# Import project modules
-from ..core.config import USER_PROFILE_FILE
+# Configuration
+USER_PROFILE_FILE = Path.home() / ".chatgpt_py_info"
 
 
 def collect_user_profile():
-    """Collect static user profile information (done once during setup)."""
+    """Collect static user profile information."""
     profile = {
         "username": getpass.getuser(),
         "os": platform.system(),
-        "os_version": platform.version(),
     }
 
     # Add Linux distribution if applicable
@@ -50,15 +50,21 @@ def save_user_profile(profile):
 
 
 def load_user_profile():
-    """Load user profile from file."""
+    """Load user profile from file, create if doesn't exist."""
     if not USER_PROFILE_FILE.exists():
-        return None
+        # Create profile if it doesn't exist
+        profile = collect_user_profile()
+        save_user_profile(profile)
+        return profile
 
     try:
         with open(USER_PROFILE_FILE, "r") as f:
             return json.load(f)
     except:
-        return None
+        # If file is corrupted, recreate it
+        profile = collect_user_profile()
+        save_user_profile(profile)
+        return profile
 
 
 def format_user_profile():
@@ -74,8 +80,5 @@ def format_user_profile():
 
     if profile.get("distro"):
         parts.append(f"Distro: {profile['distro']}")
-
-    if profile.get("os_version"):
-        parts.append(f"Version: {profile['os_version']}")
 
     return "[Static Profile: " + " | ".join(parts) + "]"
