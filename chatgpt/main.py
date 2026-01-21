@@ -23,6 +23,9 @@ from .api_client import (
     generate_image,
     get_chat_completion,
     get_system_prompt,
+    set_custom_system_prompt,
+    get_custom_system_prompt,
+    reset_system_prompt,
     COMMAND_GENERATION_PROMPT,
     DEFAULT_MODEL,
     DEFAULT_TEMPERATURE,
@@ -201,8 +204,26 @@ def main():
             "1024x1024",
             "1792x1024",
             "1024x1792",
+            "2048x2048",
+            "4096x4096",
         ],  # Added DALL-E 3 sizes
         help=f"Image size for DALL-E (default: {DEFAULT_IMAGE_SIZE}).",
+    )
+
+    # System prompt management arguments
+    parser.add_argument(
+        "--sys-prompt",
+        help="Set or update custom system prompt (saved to ~/.chatgpt_py_sys_prompt).",
+    )
+    parser.add_argument(
+        "--get-sys-prompt",
+        action="store_true",
+        help="Show current custom system prompt.",
+    )
+    parser.add_argument(
+        "--reset-sys-prompt",
+        action="store_true",
+        help="Remove custom system prompt and use default.",
     )
 
     args = parser.parse_args()
@@ -216,6 +237,42 @@ def main():
     # --- Handle Standalone Actions ---
     if args.list:
         list_models()
+        sys.exit(0)
+
+    # Handle system prompt management
+    if args.sys_prompt is not None:
+        if args.sys_prompt:
+            # Set custom system prompt from argument
+            if set_custom_system_prompt(args.sys_prompt):
+                console.print(
+                    "[green]✓[/green] Custom system prompt saved to ~/.chatgpt_py_sys_prompt"
+                )
+            else:
+                console.print("[red]✗[/red] Failed to save custom system prompt")
+        else:
+            console.print("[yellow]Warning:[/yellow] System prompt cannot be empty")
+        sys.exit(0)
+
+    if args.get_sys_prompt:
+        current_prompt = get_custom_system_prompt()
+        if current_prompt:
+            console.print(
+                f"[cyan]Current custom system prompt:[/cyan]\n{current_prompt}"
+            )
+        else:
+            console.print(
+                "[yellow]No custom system prompt found. Using default prompt.[/yellow]"
+            )
+            console.print(f"[cyan]Default prompt:[/cyan]\n{get_system_prompt()}")
+        sys.exit(0)
+
+    if args.reset_sys_prompt:
+        if reset_system_prompt():
+            console.print(
+                "[green]✓[/green] Custom system prompt removed. Using default prompt."
+            )
+        else:
+            console.print("[yellow]No custom system prompt to remove.[/yellow]")
         sys.exit(0)
 
     # --- Determine Initial Prompt and Mode ---

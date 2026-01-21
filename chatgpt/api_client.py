@@ -177,14 +177,90 @@ def get_chat_completion(messages, model, temperature, max_tokens):
 
 
 def get_system_prompt():
-    """Get the default system prompt."""
-    return f"You are ChatGPT, a large language model trained by OpenAI. Answer as concisely as possible. Current date: {datetime.now().strftime('%m/%d/%Y')}."
+    """Get the system prompt from custom file or default."""
+    from pathlib import Path
 
+    custom_prompt_file = Path.home() / ".chatgpt_py_sys_prompt"
 
-def get_chat_init_prompt():
+    if custom_prompt_file.exists():
+        try:
+            with open(custom_prompt_file, "r", encoding="utf-8") as f:
+                custom_prompt = f.read().strip()
+                if custom_prompt:
+                    return custom_prompt
+        except (IOError, OSError):
+            # If file exists but can't be read, fall back to default
+            pass
+
+    # Default system prompt
+    return f"""
+CRITICAL THINKING REQUIREMENTS:
+- Analyze the user's intent and underlying goals from their questions
+- Consider the provided context (user profile, terminal session, previous conversation)
+- Think deeply about what the user is trying to accomplish
+- Research and provide comprehensive, well-thought-out solutions
+- Anticipate follow-up needs and address potential edge cases
+- Consider system implications, security aspects, and best practices
+- Provide context-aware answers that build on previous interactions
+
+RESPONSE GUIDELINES:
+- Provide thorough, well-researched answers that demonstrate deep understanding
+- Include relevant examples, alternatives, and considerations
+- Explain the "why" behind recommendations, not just the "how"
+- Consider the user's specific environment and use case from context
+- Offer multiple approaches when applicable with pros/cons
+- Include security and performance considerations
+- Reference relevant system documentation or best practices when helpful
+"""
+
+    # def get_chat_init_prompt():
     """Get the chat initialization prompt."""
     return f"You are ChatGPT, a Large Language Model trained by OpenAI. You answer as concisely as possible for each response (e.g. don't be verbose). If you are generating a list, do not have too many items. Keep the number of items short. Before each user prompt you will be given the chat history in Q&A form. Output your answer directly, with no labels in front. Do not start your answers with A or Anwser. Today's date is {datetime.now().strftime('%m/%d/%Y')}"
 
 
 # Command generation prompt
 COMMAND_GENERATION_PROMPT = "You are a Command Line Interface expert and your task is to provide functioning shell commands. Return a CLI command and nothing else - do not send it in a code block, quotes, or anything else, just the pure text CONTAINING ONLY THE COMMAND. If possible, return a one-line bash command or chain many commands together. Return ONLY the command ready to run in the terminal. The command should do the following:"
+
+
+def set_custom_system_prompt(prompt_text):
+    """Save a custom system prompt to the file."""
+    from pathlib import Path
+
+    custom_prompt_file = Path.home() / ".chatgpt_py_sys_prompt"
+
+    try:
+        with open(custom_prompt_file, "w", encoding="utf-8") as f:
+            f.write(prompt_text.strip())
+        return True
+    except (IOError, OSError):
+        return False
+
+
+def get_custom_system_prompt():
+    """Get the current custom system prompt from file."""
+    from pathlib import Path
+
+    custom_prompt_file = Path.home() / ".chatgpt_py_sys_prompt"
+
+    if custom_prompt_file.exists():
+        try:
+            with open(custom_prompt_file, "r", encoding="utf-8") as f:
+                return f.read().strip()
+        except (IOError, OSError):
+            pass
+
+    return None
+
+
+def reset_system_prompt():
+    """Remove the custom system prompt file to use default."""
+    from pathlib import Path
+
+    custom_prompt_file = Path.home() / ".chatgpt_py_sys_prompt"
+
+    try:
+        if custom_prompt_file.exists():
+            custom_prompt_file.unlink()
+        return True
+    except (IOError, OSError):
+        return False
