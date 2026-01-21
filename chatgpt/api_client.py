@@ -193,25 +193,7 @@ def get_system_prompt():
             pass
 
     # Default system prompt
-    return f"""
-CRITICAL THINKING REQUIREMENTS:
-- Analyze the user's intent and underlying goals from their questions
-- Consider the provided context (user profile, terminal session, previous conversation)
-- Think deeply about what the user is trying to accomplish
-- Research and provide comprehensive, well-thought-out solutions
-- Anticipate follow-up needs and address potential edge cases
-- Consider system implications, security aspects, and best practices
-- Provide context-aware answers that build on previous interactions
-
-RESPONSE GUIDELINES:
-- Provide thorough, well-researched answers that demonstrate deep understanding
-- Include relevant examples, alternatives, and considerations
-- Explain the "why" behind recommendations, not just the "how"
-- Consider the user's specific environment and use case from context
-- Offer multiple approaches when applicable with pros/cons
-- Include security and performance considerations
-- Reference relevant system documentation or best practices when helpful
-"""
+    return """think carefully and provide a detailed response. use my prevoius data for a better answer."""
 
 
 # Command generation prompt
