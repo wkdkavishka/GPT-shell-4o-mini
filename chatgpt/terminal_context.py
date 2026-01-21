@@ -128,7 +128,7 @@ def clean_terminal_output(text):
     return text
 
 
-def get_terminal_session(max_lines=300):
+# def get_terminal_session(max_lines=300):
     """
     Capture recent terminal session (commands + outputs).
     Tries multiple methods in order.
@@ -145,8 +145,66 @@ def get_terminal_session(max_lines=300):
     if session:
         return ("screen", session)
 
-    # Fallback: command history only (no outputs)
-    history = get_shell_history(max_commands=5)
+    # Try to capture from current terminal using script command
+    try:
+        # This captures recent terminal output by running script briefly
+        import tempfile
+        import subprocess
+        import time
+
+        with tempfile.NamedTemporaryFile(mode="w+", delete=False) as tmp:
+            tmp_path = tmp.name
+
+        # Run script command briefly to capture terminal buffer
+        try:
+            # Use script to capture terminal output with better options
+            result = subprocess.run(
+                ["script", "-q", "-c", "exit", tmp_path],
+                capture_output=True,
+                text=True,
+                timeout=3,
+            )
+            time.sleep(0.2)  # Brief pause
+
+            # Read the captured content
+            with open(tmp_path, "r") as f:
+                content = f.read()
+
+            if content.strip():
+                lines = content.strip().split("\n")
+                # Get last max_lines, excluding the exit command and script artifacts
+                relevant_lines = []
+                for line in lines[-max_lines - 5 :]:
+                    # Skip script-related lines and empty lines
+                    if (
+                        line.strip()
+                        and "Script started" not in line
+                        and "Script done" not in line
+                        and "exit" not in line.lower()
+                        and not line.startswith("[")
+                        and len(line.strip()) > 0
+                    ):
+                        relevant_lines.append(line)
+
+                if relevant_lines:
+                    return ("script", "\n".join(relevant_lines[-max_lines:]))
+        except (
+            subprocess.TimeoutExpired,
+            subprocess.CalledProcessError,
+            FileNotFoundError,
+        ):
+            pass
+        finally:
+            # Clean up temp file
+            try:
+                os.unlink(tmp_path)
+            except:
+                pass
+    except Exception:
+        pass
+
+    # Fallback: command history only (no outputs) - get more commands
+    history = get_shell_history(max_commands=50)  # Increased from 5 to 50
     if history:
         return ("history", "\n".join([f"$ {cmd}" for cmd in history]))
 
@@ -156,15 +214,7 @@ def get_terminal_session(max_lines=300):
 def format_terminal_session():
     """Format terminal session as context string."""
     try:
-        method, session = get_terminal_session(max_lines=300)
-
-        if not session:
-            return ""
-
-        # Clean the output
-        session = clean_terminal_output(session)
-
-        # Build terminal session info
+        # Build terminal session info only (no history)
         parts = [
             f"Shell: {get_current_shell()}",
             f"CWD: {os.getcwd()}",
@@ -181,11 +231,8 @@ def format_terminal_session():
 
         terminal_info = " | ".join(parts)
 
-        # Format as separate components
-        terminal_session = f"[Terminal Session: ({terminal_info})]"
-        terminal_history = f"[Terminal History: ({session})]"
-
-        return f"{terminal_session}\n{terminal_history}"
+        # Format as terminal session info only
+        return f"[Terminal Session: ({terminal_info})]"
     except Exception:
         # Silently fail if context collection fails
         return ""

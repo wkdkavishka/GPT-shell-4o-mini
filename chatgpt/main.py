@@ -113,7 +113,7 @@ def print_debug_info(messages, model, temperature, max_tokens, debug_flag):
         from .user_profile import format_user_profile
         from .terminal_context import format_terminal_session
 
-        # Build and display context
+        # Build and display full context only
         context_parts = []
         profile = format_user_profile()
         if profile:
@@ -123,8 +123,6 @@ def print_debug_info(messages, model, temperature, max_tokens, debug_flag):
             context_parts.append(terminal)
         full_context = "\n".join(context_parts)
 
-        console.print(f"[cyan]User Profile:[/cyan]\n{profile}")
-        console.print(f"[cyan]Terminal Context:[/cyan]\n{terminal}")
         console.print(f"[cyan]Full Context:[/cyan]\n{full_context}")
 
         console.print(f"[cyan]Messages being sent:[/cyan]")
