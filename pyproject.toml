@@ -42,8 +42,7 @@ Homepage = "https://github.com/wkdkavishka/GPT-shell-4o-mini"
 [project.scripts]
 gpt = "chatgpt.main:main"
 chatgpt = "chatgpt.main:main"
-gpt-install = "install:main"
-gpt-remove = "remove:main"
+gpt-remove = "chatgpt.uninstall:main"
 
 [tool.setuptools]
 packages = ["chatgpt"]

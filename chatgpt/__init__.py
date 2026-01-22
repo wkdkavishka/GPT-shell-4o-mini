@@ -7,6 +7,9 @@ including chat completion, image generation, and command generation features.
 
 from .main import main
 
+# Import cleanup module to register automatic uninstall cleanup
+from . import cleanup
+
 # Import version from pyproject.toml to avoid duplication
 try:
     import importlib.metadata as metadata

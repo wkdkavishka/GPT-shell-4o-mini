@@ -1,4 +1,5 @@
 ### original work
+
 https://github.com/0xacx/chatGPT-shell-cli
 
 <div align=center>
@@ -12,31 +13,29 @@ I translated it to python, and added some features, Few things was not working f
 
 <h1>GPT-shell-4o-mini</h1>
 
-A simple, lightweight CLI to use OpenAI's ChatGPT and DALL-E from the terminal.  
-This project now uses a Python installer (`install.py`) for setup and a Python uninstaller (`remove.py`) for clean removal.  
-The main shell script is `chatgpt.sh`, which is installed to your system path for easy access.
+A simple, lightweight Python CLI to use OpenAI's ChatGPT and DALL-E from the terminal.
 
 </div>
 
 ## Features ✨
 
 ### 🌍 **Cross-Platform Support**
-* **Windows 10/11** - Full support with automatic environment variable setup
-* **macOS** - Works seamlessly on all versions
-* **Linux** - Supports all major distributions (Ubuntu, Fedora, Debian, Arch, etc.)
 
-### 🧠 **Advanced Terminal Context**
-* **Static User Profile** - Remembers your OS, username, and distribution
-* **Dynamic Session Capture** - Sends recent terminal commands AND outputs to ChatGPT
-  * tmux support - Captures last 30 lines automatically
-  * screen support - GNU screen buffer capture
-  * History fallback - Works even without tmux/screen
-* **Intelligent Responses** - ChatGPT sees your errors, current directory, and shell type
+- **Windows 10/11** - Full support with automatic environment variable setup
+- **macOS** - Works seamlessly on all versions
+- **Linux** - Supports all major distributions (Ubuntu, Fedora, Debian, Arch, etc.)
 
-### 🚀 **Seamless Setup**
-* **First-run wizard** - Automatic API key setup and verification
-* **No external dependencies** - Uses Python's requests library (no curl needed)
-* **Platform-aware** - Automatically configures for your OS
+### 🧠 **Smart Terminal Context**
+
+- **User Profile** - Remembers your OS, username, and distribution
+- **Terminal Session Info** - Sends current working directory, shell type, and environment to ChatGPT
+- **Intelligent Responses** - ChatGPT sees your context and environment for better assistance
+
+### 🚀 **Easy Setup**
+
+- **First-run wizard** - Automatic API key setup and verification
+- **Python Package** - Installable via pip for easy management
+- **Cross-platform** - Works on Windows, macOS, and Linux
 
 ---
 
@@ -44,24 +43,16 @@ The main shell script is `chatgpt.sh`, which is installed to your system path fo
 
 ### Prerequisites
 
-* **Python 3.7+** (usually pre-installed)
-* **An OpenAI API key** - Get one free at [OpenAI](https://platform.openai.com/account/api-keys)
-
-**Optional (for best terminal context):**
-* [tmux](https://github.com/tmux/tmux) - Highly recommended for full terminal session capture
-  ```sh
-  sudo apt install tmux   # Ubuntu/Debian
-  sudo dnf install tmux   # Fedora
-  brew install tmux       # macOS
-  ```
+- **Python 3.7+** (usually pre-installed)
+- **An OpenAI API key** - Get one free at [OpenAI](https://platform.openai.com/account/api-keys)
 
 ---
 
 ### Installation
 
-#### Windows
+#### Installation
 
-**Pip Installation (Only method for Windows):**
+**Pip Installation (Recommended for all platforms):**
 
 ```sh
 pip install gpt-shell-4o-mini
@@ -74,93 +65,178 @@ gpt
 ```
 
 The wizard will:
-* Prompt for your OpenAI API key
-* Verify the key with OpenAI
-* Save it to Windows environment variables automatically
-* Create your user profile
 
-> **Note:** Manual installation via `install.py` is not supported on Windows.
-
-#### macOS / Linux
-
-**Option 1: Pip Installation (Recommended)**
-
-```sh
-pip install gpt-shell-4o-mini
-```
-
-Run `gpt` to start the setup wizard.
-
-**Option 2: Manual Installation**
-
-Quick install without cloning:
-```sh
-curl -O https://raw.githubusercontent.com/wkdkavishka/GPT-shell-4o-mini/origin/install.py
-sudo python3 install.py
-```
-
-Or clone and install:
-```sh
-git clone https://github.com/wkdkavishka/GPT-shell-4o-mini.git
-cd GPT-shell-4o-mini
-sudo python3 install.py
-```
-
-You will be prompted for your OpenAI API key during the installation.
-Alternatively, you can provide your key directly:
-
-```sh
-sudo python3 install.py --key <YOUR_OPENAI_API_KEY>
-```
-
-This will:
-- Download and install `chatgpt.sh` to `/usr/local/bin/gpt`
-- Optionally create a symlink `/usr/local/bin/chatgpt`
-- Add your API key and `/usr/local/bin` to your shell profile
+- Prompt for your OpenAI API key
+- Verify the key with OpenAI
+- Save it securely in your os environment
+- Create your user profile
+- Files Will be created at your home directory as chatgpt_py\*\*
 
 ### Uninstallation
 
-The `remove.py` script provides comprehensive uninstallation that works whether you installed via pip or manually.
+#### **IMPORTANT: Command Order Matters**
 
-**For a quick uninstall without cloning:**
+**Always run `gpt-remove` BEFORE `pip uninstall`** - the `gpt-remove` command is part of the package and will be removed by `pip uninstall`.
 
-```sh
-curl -O https://raw.githubusercontent.com/wkdkavishka/GPT-shell-4o-mini/origin/remove.py
-python3 remove.py
-# Or with sudo if you used manual installation:
-sudo python3 remove.py
+---
+
+#### **Method 1: Complete Uninstall (Recommended)**
+
+```bash
+gpt-remove
 ```
 
-**What it removes:**
-- Package installed via pip (if applicable)
-- Manual installation from `/usr/local/bin/gpt` and `/usr/local/bin/chatgpt` (if applicable)
-- `OPENAI_KEY` and `/usr/local/bin` PATH modifications from your shell profiles
-- Chat history file (`~/.chatgpt_py_history`)
+**What `gpt-remove` does:**
 
-The script automatically detects how the package was installed and removes it accordingly.
+- **Interactive confirmation** - asks before proceeding
+- **Removes configuration files** - deletes `~/.chatgpt_py_*` files
+- **Cleans environment variables** - removes OPENAI_KEY from shell profiles
+- **Uninstalls Python package** - runs `pip uninstall gpt-shell-4o-mini` automatically
+- **Shows progress** - detailed feedback throughout the process
 
-### Manual Installation
+**Result:** Complete removal of all traces of the package
 
-If you want to install manually:
+---
 
-- Download the `chatgpt.sh` file to a directory in your `$PATH`
-- Add your OpenAI API key to your shell profile:  
-  `export OPENAI_KEY=your_key_here`
-- Make sure `/usr/local/bin` is in your `$PATH`
-- (Optional) Install [imgcat](https://iterm2.com/utilities/imgcat) for iTerm2 image support
+#### **Method 2: Basic Package Removal**
+
+```bash
+pip uninstall gpt-shell-4o-mini
+```
+
+**What `pip uninstall` does:**
+
+- **Removes Python package** - deletes package from site-packages
+- **Removes commands** - deletes `gpt`, `chatgpt`, and `gpt-remove` commands
+- **Leaves configuration files** - `~/.chatgpt_py_*` files remain
+- **Leaves environment variables** - OPENAI_KEY in shell profiles remains
+
+**Result:** Package removed but manual cleanup required
+
+---
+
+#### **Method 3: Manual Cleanup After Basic Uninstall**
+
+If you already ran `pip uninstall` and need to clean up:
+
+```bash
+# Download and run the uninstall module
+curl -O https://raw.githubusercontent.com/wkdkavishka/GPT-shell-4o-mini/main/chatgpt/uninstall.py
+python uninstall.py
+```
+
+**What this does:**
+
+- **Removes configuration files** - cleans up `~/.chatgpt_py_*` files
+- **Cleans environment variables** - removes OPENAI_KEY from shell profiles
+- **Cannot uninstall package** - package already removed
+
+**Result:** Configuration cleanup only
+
+---
+
+### **Manual Cleanup Required After `pip uninstall`**
+
+If you used `pip uninstall` without `gpt-remove`, manually remove:
+
+- **Chat history**: `~/.chatgpt_py_history`
+- **Custom system prompt**: `~/.chatgpt_py_sys_prompt`
+- **User profile**: `~/.chatgpt_py_info`
+- **Environment variables**: OPENAI_KEY from shell profiles (`~/.bashrc`, `~/.zshrc`, etc.)
 
 ## Usage
 
-### Start
+### Command Line Options
 
-#### Chat Mode
-  - Run the script by using the `gpt` or `chatgpt` command anywhere. By default the script uses the `gpt-4o-mini` model.
+```bash
+gpt [OPTIONS]
+```
+
+#### Basic Options
+
+- `-h, --help` - Show help message and exit
+- `-p, --prompt PROMPT` - Provide prompt directly instead of starting chat
+- `--prompt-from-file FILE` - Provide prompt from a file
+- `-l, --list` - List available OpenAI models
+
+#### Model & Response Options
+
+- `-m, --model MODEL` - Model to use (default: gpt-4o-mini)
+- `-t, --temperature TEMPERATURE` - Sampling temperature (default: 0.7)
+- `--max-tokens MAX_TOKENS` - Max tokens for completion (default: 1024)
+- `-s, --size SIZE` - Image size for DALL-E (default: 512x512)
+
+#### System Prompt Management
+
+- `-i, --init-prompt PROMPT` - Provide initial system prompt (overrides default)
+- `--init-prompt-from-file FILE` - Provide initial system prompt from file
+- `--sys-prompt PROMPT` - Set or update custom system prompt (saved to ~/.chatgpt_py_sys_prompt)
+- `--get-sys-prompt` - Show current custom system prompt
+- `--reset-sys-prompt` - Remove custom system prompt and use default
+
+#### Debug Options
+
+- `--debug` - Print debug information including context sent to AI
+
+### Usage Examples
+
+#### Interactive Chat Mode
+
+```bash
+gpt
+# Starts interactive chat with ChatGPT
+```
+
+#### Single Prompt Mode
+
+```bash
+gpt -p "What is the regex to match an email address?"
+gpt --prompt "Translate to French: Hello World!"
+```
+
 #### Pipe Mode
-  - You can also use it in pipe mode:  
-    `echo "What is the command to get all pdf files created yesterday?" | gpt`
-#### Script Parameters
-  - You can also pass the prompt as a command line argument:  
-    `gpt -p "What is the regex to match an email address?"`
+
+```bash
+echo "What is the command to get all pdf files created yesterday?" | gpt
+ls -la | gpt -p "Explain these file permissions"
+```
+
+#### File Input
+
+```bash
+gpt --prompt-from-file my_prompt.txt
+gpt --init-prompt-from-file custom_system_prompt.txt
+```
+
+#### Model Configuration
+
+```bash
+gpt --model gpt-4 --temperature 0.9 --max-tokens 2000
+gpt -m gpt-4o -t 0.5
+```
+
+#### System Prompt Management
+
+```bash
+# Set custom system prompt
+gpt --sys-prompt "You are a helpful Python programmer. Always provide code examples."
+
+# View current system prompt
+gpt --get-sys-prompt
+
+# Reset to default
+gpt --reset-sys-prompt
+
+# Use temporary system prompt
+gpt -i "You are a chef. Provide cooking advice." -p "How do I make pasta?"
+```
+
+#### Debug Mode
+
+```bash
+gpt --debug -p "Why is my script not working?"
+gpt --debug  # Starts interactive chat with debug info
+```
 
 ---
 
@@ -170,51 +246,48 @@ If you want to install manually:
 
 GPT-shell-4o-mini automatically sends contextual information with every prompt:
 
-**Static Profile** (`~/.chatgpt_py_info`):
-* Your username
-* Operating system and version
-* Linux distribution (if applicable)
+**User Profile** (`~/.chatgpt_py_info`):
 
-**Dynamic Terminal Session** (captured in real-time):
-* Current working directory
-* Shell type (bash, zsh, PowerShell, etc.)
-* Recent terminal commands AND their outputs!
+- Your username
+- Operating system and version
+- Linux distribution (if applicable)
+
+**Terminal Session** (captured in real-time):
+
+- Current working directory
+- Shell type (bash, zsh, PowerShell, etc.)
+- Environment information
 
 ### Example
 
-When you run `gpt` in tmux, ChatGPT sees:
+When you run `gpt`, ChatGPT sees:
 
 ```
 [Static Profile: User: john | OS: Linux | Distro: Ubuntu 22.04]
-[Terminal Session (Shell: bash | CWD: /home/john/project | Source: tmux):
-john@ubuntu:~/project$ npm run dev
-Error: Missing script: "dev"
+[Terminal Session (Shell: bash | CWD: /home/john/project):
 ]
 
-You: How do I fix this?
+You: How do I fix this Python error?
 ```
 
 ChatGPT response will be context-aware:
-> "I see you're missing the 'dev' script in package.json. Since you're on Ubuntu..."
 
-### Best Experience
+> "I see you're working in the `/home/john/project` directory on Ubuntu..."
 
-For full terminal session capture (commands + outputs):
+### Debug Mode
+
+Use `--debug` to see exactly what context is sent to ChatGPT:
 
 ```bash
-# Install tmux
-sudo apt install tmux   # Ubuntu/Debian
-sudo dnf install tmux   # Fedora  
-brew install tmux       # macOS
-
-# Start tmux
-tmux
-
-# Now run gpt - it captures your entire session!
-gpt
+gpt --debug -p "Help me debug this issue"
 ```
 
-Without tmux/screen, it falls back to command history only.
+This will show:
+
+- The full user profile
+- Terminal session information
+- Complete message history being sent
+- Model parameters being used
 
 ---
 
@@ -223,36 +296,40 @@ Without tmux/screen, it falls back to command history only.
 For issues, questions, or contributions, please visit the  
 [GitHub Repository](https://github.com/wkdkavishka/GPT-shell-4o-mini)
 
-### Commands
+## Interactive Commands
 
-  - `image:` To generate images, start a prompt with `image:`
-  - `history` To view your chat history, type `history`
-  - `models` To get a list of the models available at OpenAI API, type `models`
-  - `model:` To view all the information on a specific model, start a prompt with `model:` and the model `id`
-  - `command:` To get a command with the specified functionality and run it, just type `command:` and explain what you want to achieve
+During interactive chat mode, you can use these special commands:
 
-### Chat context
+- `image:` Generate images - Start a prompt with `image:` followed by description
+  - Example: `image: a cute cat sitting on a laptop`
+- `history` View your chat history
+- `models` List available OpenAI models
+- `model:` Get details on a specific model - Start with `model:` followed by model ID
+  - Example: `model: gpt-4o-mini`
+- `command:` Generate and execute commands - Start with `command:` followed by description
+  - Example: `command: list all files larger than 100MB in current directory`
+- `exit`, `quit`, `q` Exit the chat
 
-  - Enable chat context mode for the model to remember your previous chat questions and answers. Start the script with `-c` or `--chat-context`.
+### Image Generation
 
-#### Set chat initial prompt
-  - Set your own initial chat prompt with `-i` or `--init-prompt`  
-    Example: `gpt -i "You are Rick from Rick and Morty, reply with references to episodes."` 
+```bash
+# In interactive mode
+image: a beautiful sunset over mountains
 
-### Use the official ChatGPT model
+# With specific size
+gpt -s "1024x1024" -p "image: futuristic cityscape"
+```
 
-  - The default model used is `gpt-4o-mini`.
+Available image sizes: `256x256`, `512x512`, `1024x1024`, `1792x1024`, `1024x1792`, `2048x2048`, `4096x4096`
 
-### Use GPT-4
-  - If you have access to the GPT-4 model you can use it by setting the model to `gpt-4`, i.e. `gpt --model gpt-4`
+### Command Generation
 
-### Set request parameters
+```bash
+# In interactive mode
+command: find all Python files with syntax errors
 
-  - To set request parameters:  
-    `gpt --temperature 0.9 --model text-babbage:001 --max-tokens 100 --size 1024x1024`
-    - temperature,  `-t` or `--temperature`
-    - model, `-m` or `--model`
-    - max number of tokens, `--max-tokens`
-    - image size, `-s` or `--size`
-    - prompt, `-p` or `--prompt` 
-    - prompt from a file, `--prompt-from-file`  
+# As single prompt
+gpt -p "command: compress all log files older than 30 days"
+```
+
+**⚠️ Safety Warning:** Generated commands are checked for dangerous patterns. You'll be asked to confirm before execution.
