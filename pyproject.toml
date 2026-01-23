@@ -4,8 +4,25 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "gpt-shell-4o-mini"
-version = "1.2.1"
-description = "A simple, lightweight CLI to use OpenAI's ChatGPT and DALL-E from the terminal"
+version = "1.2.2"
+description = """A simple, lightweight CLI to use OpenAI's ChatGPT and DALL-E from the terminal.
+
+## Version 1.2.2 (Latest)
+### Added
+- Full-width horizontal line separators after chat responses for better readability
+- Built-in gpt-remove command for complete package uninstallation
+- Self-deleting uninstall script for manual cleanup scenarios
+- Comprehensive uninstall documentation with multiple methods
+
+### Fixed  
+- Default image size changed from 512x512 to 1024x1024 for DALL-E 3 compatibility
+- Updated README with accurate CLI options and installation instructions
+- Removed references to non-existent install/remove scripts
+
+### Enhanced
+- Better visual separation between chat responses
+- Improved uninstall workflow with automatic cleanup
+- More accurate documentation reflecting actual package functionality"""
 readme = "README.md"
 requires-python = ">=3.7"
 license = "MIT"
