@@ -385,6 +385,9 @@ def main():
             console.print(" " * 30, end="\r")  # Clear processing message
             if response_data:
                 console.print(Markdown(response_data))
+                console.print(
+                    "─" * console.width
+                )  # Full-width horizontal line separator
                 append_history(prompt, response_data)
             else:
                 console.print("[red]Failed to get response.[/red]")
@@ -525,6 +528,9 @@ def main():
             if response_data:
                 console.print("[bold cyan]ChatGPT:[/bold cyan]")
                 console.print(Markdown(response_data))
+                console.print(
+                    "─" * console.width
+                )  # Full-width horizontal line separator
                 messages.append({"role": "assistant", "content": response_data})
                 append_history(prompt, response_data)
 
